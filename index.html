@@ -1,0 +1,1351 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="color-scheme" content="light dark">
+<script>document.documentElement.dataset.theme=
+  (window.matchMedia&&matchMedia('(prefers-color-scheme: dark)').matches)?'dark':'light';</script>
+<title>Сравнение сценариев покупки жилья</title>
+<style>
+:root{
+  --paper:#eceff3; --line:#cfd6de; --line-soft:#e3e8ee;
+  --ink:#151a21; --ink-2:#5a6572; --ink-3:#8b95a1;
+  --card:#fff; --a:#1d4ed8; --a-soft:#e8edfd; --b:#b81457; --b-soft:#fce8f0;
+  --ok:#0f7b52; --warn:#a15c00; --warn-bg:#fdf4e3; --warn-line:#f0e2c6;
+  --surface-2:#f8fafb; --surface-3:#f2f6f9; --field:#fff; --field-off:#f2f4f7;
+  --invert-bg:#151a21; --invert-fg:#fff; --on-accent:#fff;
+  --grid:#e8ecf1; --grid-soft:#eef1f5; --axis:#8b95a1; --zero:#aeb8c4;
+  --area-op:.07; --brush-win:rgba(29,78,216,.13); --mini-a:#c3d0f2; --mini-b:#f0c4d6;
+  --tip-dim:#9dabbd; --grid-px:rgba(120,140,165,.09);
+  color-scheme:light dark;
+  --mono:ui-monospace,"SF Mono",Menlo,Consolas,"Liberation Mono",monospace;
+  --sans:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,"Helvetica Neue",Arial,sans-serif;
+  --r:5px;
+}
+*{box-sizing:border-box}
+html,body{margin:0;padding:0}
+body{
+  background:var(--paper);
+  background-image:linear-gradient(to right,var(--grid-px) 1px,transparent 1px),
+                   linear-gradient(to bottom,var(--grid-px) 1px,transparent 1px);
+  background-size:26px 26px;
+  color:var(--ink);font-family:var(--sans);font-size:14px;line-height:1.5;-webkit-font-smoothing:antialiased;
+}
+.wrap{max-width:1220px;margin:0 auto;padding:26px 18px 90px}
+.head-row{margin-bottom:16px}
+h1{font-size:25px;line-height:1.15;margin:0;font-weight:750;letter-spacing:-.02em}
+.author{display:inline-flex;align-items:center;gap:6px;margin-top:8px;font-size:12.5px;font-weight:600;
+  color:var(--ink-2);text-decoration:none;transition:.12s}
+.author:hover{color:#0f7ba8}
+.author svg{width:15px;height:15px;fill:#229ED9;flex:none}
+.hdr-actions{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:20px}
+.eyebrow{font-size:10.5px;font-weight:700;letter-spacing:.13em;text-transform:uppercase;color:var(--ink-3)}
+.btn{display:inline-flex;align-items:center;gap:6px;font-family:var(--sans);font-size:12.5px;font-weight:600;padding:8px 13px;border:1px solid var(--line);
+  background:var(--card);color:var(--ink);border-radius:var(--r);cursor:pointer;transition:.12s}
+.btn:hover{border-color:var(--ink-3);background:var(--surface-2)}
+.btn:focus-visible,input:focus-visible,select:focus-visible,.author:focus-visible{outline:2px solid var(--a);outline-offset:2px}
+.btn-ico svg{width:15px;height:15px;flex:none}
+.btn-primary{background:var(--invert-bg);color:var(--invert-fg);border-color:var(--invert-bg);padding:11px 22px;font-size:14px}
+.btn-primary:hover{opacity:.86}
+
+.palette{background:var(--card);border:1px solid var(--line);border-radius:var(--r);padding:14px 15px 15px;margin-bottom:20px}
+.palette-head{display:flex;justify-content:space-between;align-items:baseline;gap:12px;margin-bottom:11px;flex-wrap:wrap}
+.palette-head p{margin:0;font-size:12px;color:var(--ink-2)}
+.chips{display:flex;flex-wrap:wrap;gap:8px}
+.chip{display:flex;align-items:stretch;border:1px solid var(--line);border-radius:var(--r);background:var(--surface-2);
+  cursor:grab;user-select:none;overflow:hidden;transition:border-color .12s,background .12s;touch-action:none}
+.chip:hover{border-color:var(--ink-3);background:var(--card)}
+.chip-grip{width:13px;flex:none;background-image:radial-gradient(circle,var(--line) 1.1px,transparent 1.1px);
+  background-size:5px 5px;background-position:center;border-right:1px solid var(--line-soft)}
+.chip-label{padding:8px 11px 8px 9px;font-size:13px;font-weight:600;white-space:nowrap}
+
+.board{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:20px}
+.side{background:var(--card);border:1px solid var(--line);border-radius:var(--r);display:flex;flex-direction:column;min-height:240px}
+.side[data-side="A"]{--accent:var(--a);--tint:var(--a-soft)}
+.side[data-side="B"]{--accent:var(--b);--tint:var(--b-soft)}
+.side.over{border-color:var(--accent);box-shadow:inset 0 0 0 2px var(--tint)}
+.side-head{display:flex;align-items:center;gap:8px;padding:10px 12px;border-bottom:1px solid var(--line-soft)}
+.side-tag{width:22px;height:22px;flex:none;border-radius:3px;background:var(--accent);color:var(--on-accent);font-family:var(--mono);
+  font-size:12px;font-weight:700;display:flex;align-items:center;justify-content:center}
+.side-name{flex:1;border:none;background:transparent;font-family:var(--sans);font-size:15px;font-weight:700;
+  color:var(--ink);padding:2px 4px;border-radius:3px;min-width:0}
+.side-name:hover{background:var(--surface-3)}
+.side-tools{display:flex;gap:4px;flex:none}
+.tool{border:1px solid var(--line);background:var(--card);border-radius:3px;font-size:11px;color:var(--ink-2);
+  padding:3px 7px;cursor:pointer;font-family:var(--sans);white-space:nowrap}
+.tool:hover{border-color:var(--ink-3);color:var(--ink)}
+.side-body{padding:12px;display:flex;flex-direction:column;gap:10px;flex:1}
+.empty{flex:1;display:flex;align-items:center;justify-content:center;text-align:center;border:1.5px dashed var(--line);
+  border-radius:var(--r);color:var(--ink-3);font-size:12.5px;padding:30px 18px;line-height:1.5}
+.side.over .empty{border-color:var(--accent);color:var(--accent)}
+.slot{height:3px;background:var(--accent);border-radius:2px;margin:-4px 0}
+
+.node{border:1px solid var(--line);border-radius:var(--r);background:var(--card);overflow:hidden}
+.node.ghosted{opacity:.35}
+.node-head{display:flex;align-items:center;gap:8px;padding:8px 9px;background:var(--surface-2);
+  border-bottom:1px solid var(--line-soft);cursor:grab;touch-action:none}
+.node-head:hover{background:var(--surface-3)}
+.node-bar{width:3px;align-self:stretch;background:var(--accent);border-radius:2px;flex:none}
+.node-title{flex:1;font-size:13.5px;font-weight:650}
+.node-sum{font-family:var(--mono);font-size:11.5px;color:var(--ink-2);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:46%}
+.node-x{border:none;background:transparent;color:var(--ink-3);cursor:pointer;font-size:16px;line-height:1;padding:2px 5px;border-radius:3px;flex:none}
+.node-x:hover{background:var(--surface-3);color:var(--b)}
+.node-warn{padding:6px 10px;background:var(--warn-bg);color:var(--warn);font-size:11.5px;border-bottom:1px solid var(--warn-line)}
+.node-warn:empty{display:none}
+.node-body{padding:10px 11px 12px;display:grid;grid-template-columns:1fr 1fr;gap:9px 11px}
+.node.collapsed .node-body{display:none}
+.info{grid-column:1/-1;font-family:var(--mono);font-size:11.5px;color:var(--accent);background:var(--surface-2);
+  border:1px solid var(--line-soft);border-radius:4px;padding:6px 8px}
+.fld{display:flex;flex-direction:column;gap:3px;min-width:0}
+.fld.full{grid-column:1/-1}
+.fld label{font-size:10.5px;font-weight:650;letter-spacing:.04em;text-transform:uppercase;color:var(--ink-3)}
+.fld input,.fld select{font-family:var(--mono);font-size:13px;padding:6px 7px;border:1px solid var(--line);
+  border-radius:4px;background:var(--field);color:var(--ink);width:100%;min-width:0}
+.fld input:disabled{background:var(--field-off);color:var(--ink-2)}
+.fld .hint{font-size:10.5px;color:var(--ink-3)}
+.sub{grid-column:1/-1;font-size:10.5px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--accent);
+  border-top:1px solid var(--line-soft);padding-top:9px;margin-top:1px}
+.node-body>.sub:first-child{border-top:none;padding-top:0;margin-top:0}
+.chk{grid-column:1/-1;display:flex;align-items:center;gap:7px;font-size:12.5px;color:var(--ink-2);cursor:pointer}
+.chk input{width:15px;height:15px;accent-color:var(--accent);margin:0}
+
+#drag{position:fixed;z-index:99;pointer-events:none;opacity:.92;box-shadow:0 8px 24px rgba(21,26,33,.28);
+  border-radius:var(--r);overflow:hidden;background:var(--card);border:1px solid var(--ink-3)}
+
+.chip-add{display:none;align-items:center;padding:0 7px 0 4px;gap:4px;border-left:1px solid var(--line-soft)}
+.mini{width:26px;height:26px;border-radius:4px;border:1px solid var(--line);background:var(--card);font-family:var(--mono);
+  font-size:12px;font-weight:700;color:var(--ink-2);cursor:pointer;display:flex;align-items:center;justify-content:center;padding:0}
+.mini.m-a{color:var(--a);border-color:var(--mini-a)}
+.mini.m-b{color:var(--b);border-color:var(--mini-b)}
+.mini.m-a:active{background:var(--a);color:var(--on-accent)}
+.mini.m-b:active{background:var(--b);color:var(--on-accent)}
+.node-move{display:none;border:1px solid var(--line);background:var(--card);border-radius:3px;color:var(--ink-2);
+  font-size:11px;padding:4px 8px;cursor:pointer;flex:none;font-family:var(--sans);white-space:nowrap}
+
+.run{display:flex;align-items:center;justify-content:center;gap:16px;flex-wrap:wrap;margin:24px 0 26px}
+.run label{font-size:12.5px;color:var(--ink-2);display:flex;align-items:center;gap:7px}
+.run-note{max-width:760px;margin:-14px auto 26px;text-align:center;font-size:12px;line-height:1.5;color:var(--ink-3)}
+select,.num{font-family:var(--sans);font-size:13px;padding:7px 9px;border:1px solid var(--line);border-radius:4px;background:var(--field);color:var(--ink)}
+.num{width:64px;font-family:var(--mono);text-align:right}
+
+#results{display:none}
+#results.on{display:block}
+.panel{background:var(--card);border:1px solid var(--line);border-radius:var(--r);margin-bottom:16px}
+.panel-head{padding:12px 15px;border-bottom:1px solid var(--line-soft);display:flex;justify-content:space-between;align-items:center;gap:14px;flex-wrap:wrap}
+.panel-head h2{margin:0;font-size:15px;font-weight:700;letter-spacing:-.01em}
+.legend{display:flex;gap:14px;font-size:12px;flex-wrap:wrap}
+.legend i{display:inline-block;width:16px;height:3px;border-radius:2px;vertical-align:middle;margin-right:6px}
+.verdict{padding:14px 15px;font-size:14.5px;line-height:1.6}
+.verdict b{font-family:var(--mono);font-weight:700}
+
+.chart-wrap{position:relative;padding:10px 6px 0}
+svg{display:block;width:100%;height:auto}
+.tip{position:absolute;pointer-events:none;background:var(--invert-bg);color:var(--invert-fg);border-radius:4px;padding:8px 10px;
+  font-size:12px;line-height:1.5;white-space:nowrap;opacity:0;transition:opacity .1s;box-shadow:0 4px 14px rgba(21,26,33,.25);z-index:5}
+.tip .t-d{font-family:var(--mono);font-size:10.5px;letter-spacing:.06em;text-transform:uppercase;color:var(--tip-dim);margin-bottom:4px}
+.tip .t-r{display:flex;justify-content:space-between;gap:14px}
+.tip .t-r b{font-family:var(--mono);font-weight:600}
+.tip i{display:inline-block;width:8px;height:8px;border-radius:2px;margin-right:6px}
+
+.brush{position:relative;height:46px;margin:2px 22px 6px 78px;touch-action:none;user-select:none}
+.brush-track{position:absolute;left:0;right:0;top:10px;height:16px;background:var(--grid-soft);border:1px solid var(--line-soft);border-radius:3px;cursor:pointer}
+.brush-win{position:absolute;top:10px;height:16px;background:var(--brush-win);border:1px solid var(--ink-3);border-radius:3px;cursor:grab}
+.bh{position:absolute;top:-4px;width:10px;height:22px;background:var(--card);border:1px solid var(--ink-3);border-radius:2px;cursor:ew-resize}
+.bh.l{left:-6px}.bh.r{right:-6px}
+.brush-lbl{position:absolute;top:30px;left:0;right:0;display:flex;justify-content:space-between;
+  font-family:var(--mono);font-size:10.5px;color:var(--ink-3)}
+.brush-hint{position:absolute;top:30px;left:0;right:0;text-align:center;font-size:10.5px;color:var(--ink-3)}
+
+table{width:100%;border-collapse:collapse;font-size:13px}
+th,td{padding:8px 15px;text-align:right;border-bottom:1px solid var(--line-soft)}
+th:first-child,td:first-child{text-align:left}
+thead th{font-size:10.5px;font-weight:700;letter-spacing:.09em;text-transform:uppercase;color:var(--ink-3);background:var(--surface-2)}
+tbody td{font-family:var(--mono);font-size:12.5px}
+tbody td:first-child{font-family:var(--sans);font-size:13px}
+tbody tr:hover{background:var(--surface-2)}
+tr.total td{font-weight:700;border-top:1.5px solid var(--line);background:var(--surface-2)}
+.dim{color:var(--ink-3)}
+.pos{color:var(--ok)}
+.neg{color:var(--b)}
+.scroll{max-height:340px;overflow:auto}
+.scroll thead th{position:sticky;top:0;z-index:2}
+.cA{color:var(--a)}
+.cB{color:var(--b)}
+.note{padding:11px 15px;font-size:12px;color:var(--ink-2);border-top:1px solid var(--line-soft)}
+
+.toast{position:fixed;left:50%;bottom:26px;transform:translate(-50%,14px);background:var(--invert-bg);color:var(--invert-fg);padding:10px 16px;
+  border-radius:var(--r);font-size:13px;opacity:0;pointer-events:none;transition:.18s;z-index:60;max-width:90vw;text-align:center}
+.toast.on{opacity:1;transform:translate(-50%,0)}
+
+:root[data-theme="dark"]{
+  --paper:#0f1318; --line:#2c343d; --line-soft:#222a32;
+  --ink:#e8edf3; --ink-2:#9aa6b3; --ink-3:#6e7986;
+  --card:#171c23; --surface-2:#1c222a; --surface-3:#232b34;
+  --field:#11161c; --field-off:#1a2028;
+  --a:#7aa2ff; --a-soft:#1b2740; --b:#ff85ae; --b-soft:#3a1e2a;
+  --ok:#4cc38a; --warn:#e0a75c; --warn-bg:#2c2417; --warn-line:#463920;
+  --invert-bg:#e8edf3; --invert-fg:#0f1318; --on-accent:#0f1318;
+  --grid:#242c35; --grid-soft:#1b2229; --axis:#7b8794; --zero:#3a444f;
+  --area-op:.14; --brush-win:rgba(122,162,255,.2); --mini-a:#33436b; --mini-b:#5d2b40;
+  --tip-dim:#6e7986; --grid-px:rgba(140,165,195,.055);
+}
+:root[data-theme="dark"] .author:hover{color:#5bc0e8}
+:root[data-theme="dark"] .chip:hover{background:var(--surface-3)}
+.xscroll{overflow-x:auto}
+/* кнопки вариантов — в узком окне и на любом сенсорном экране */
+@media (max-width:900px),(pointer:coarse){
+  .chip-add{display:flex}
+  .node-move{display:block}
+}
+/* на сенсоре перетаскивания нет: убираем ручку захвата и не блокируем прокрутку */
+@media (pointer:coarse){
+  .chip,.node-head{touch-action:auto;cursor:default}
+  .chip-grip{display:none}
+  .chip-label{padding-left:11px}
+}
+@media (max-width:820px){
+  .board{grid-template-columns:1fr}
+  .node-body{grid-template-columns:1fr}
+  th,td{padding:7px 11px}
+}
+@media (max-width:640px){
+  .wrap{padding:18px 12px 90px}
+  h1{font-size:20px}
+  .head-row{margin-bottom:12px}
+  .author{font-size:12px;margin-top:6px}
+  .hdr-actions{margin-bottom:16px}
+  .hdr-actions .btn{flex:1 1 auto;text-align:center}
+  .palette{padding:12px}
+  .palette-head p{font-size:11.5px}
+  .chip-label{padding:11px 10px 11px 11px}
+  .node-head{padding:9px}
+  .side-head{flex-wrap:wrap;gap:6px}
+  .side-name{flex:1 1 60%;font-size:16px}
+  .side-tools{flex:1 1 100%;justify-content:flex-start}
+  .tool{flex:1;text-align:center;padding:6px 8px;font-size:11.5px}
+  .node-head{flex-wrap:wrap;row-gap:2px}
+  .node-title{flex:1 1 auto}
+  .node-sum{order:3;flex:1 1 100%;max-width:100%;padding-left:11px;white-space:normal}
+  .node-x{order:2;font-size:20px;padding:0 6px}
+  .fld input,.fld select{font-size:16px;padding:8px 8px}
+  .chk{padding:2px 0}
+  .chk input{width:18px;height:18px}
+  .run{gap:10px;margin:18px 0 20px}
+  .run label{flex:1 1 100%;justify-content:center}
+  .run .btn-primary{flex:1 1 100%}
+  .run-note{margin:-8px auto 20px;font-size:11.5px;text-align:left}
+  .panel-head{padding:11px 12px}
+  .panel-head h2{font-size:14px}
+  .verdict{padding:12px;font-size:13.5px}
+  .note{padding:10px 12px;font-size:11.5px}
+  .brush{height:42px}
+  .brush-hint{display:none}
+  .bh{width:14px;left:auto}
+  .bh.l{left:-8px}.bh.r{right:-8px}
+  table{min-width:480px}
+  th,td{padding:7px 9px}
+  tbody td,tbody td:first-child{font-size:12px}
+  thead th{font-size:10px}
+  .scroll{max-height:300px}
+}
+@media (prefers-reduced-motion:reduce){*{transition:none!important}}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<header>
+  <div class="head-row">
+    <h1>Сравнение сценариев покупки жилья</h1>
+    <a class="author" href="https://t.me/damirut" target="_blank" rel="noopener">
+      <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M21.9 4.3 18.6 20c-.2 1-.9 1.3-1.8.8l-5-3.7-2.4 2.3c-.3.3-.5.5-1 .5l.4-5 9.2-8.3c.4-.4-.1-.6-.6-.2L6.1 13.6l-4.9-1.5c-1-.3-1-1 .2-1.5l19.2-7.4c.9-.3 1.6.2 1.3 1.1z"/></svg>
+      made by @damirut
+    </a>
+  </div>
+  <div class="hdr-actions">
+    <button class="btn" id="preset">Загрузить пример</button>
+    <button class="btn" id="csv">Скачать расчёт (CSV)</button>
+    <button class="btn" id="clear">Очистить всё</button>
+    <button class="btn btn-ico" id="theme" title="Переключить оформление"></button>
+  </div>
+</header>
+
+<section class="palette">
+  <div class="palette-head">
+    <div class="eyebrow">Блоки параметров</div>
+    <p>Перетащите блок в любую секцию и настройте параметры.</p>
+  </div>
+  <div class="chips" id="chips"></div>
+</section>
+
+<div class="board">
+  <div class="side" data-side="A">
+    <div class="side-head">
+      <div class="side-tag">1</div>
+      <input class="side-name" data-side="A" value="Вариант 1" aria-label="Название варианта 1">
+      <div class="side-tools">
+        <button class="tool" data-copy="A">Копировать в 2</button>
+        <button class="tool" data-wipe="A">Очистить</button>
+      </div>
+    </div>
+    <div class="side-body" data-drop="A"></div>
+  </div>
+  <div class="side" data-side="B">
+    <div class="side-head">
+      <div class="side-tag">2</div>
+      <input class="side-name" data-side="B" value="Вариант 2" aria-label="Название варианта 2">
+      <div class="side-tools">
+        <button class="tool" data-copy="B">Копировать в 1</button>
+        <button class="tool" data-wipe="B">Очистить</button>
+      </div>
+    </div>
+    <div class="side-body" data-drop="B"></div>
+  </div>
+</div>
+
+<div class="run">
+  <label>Горизонт
+    <select id="horizon">
+      <option value="5">5 лет</option>
+      <option value="10">10 лет</option>
+      <option value="15">15 лет</option>
+      <option value="20">20 лет</option>
+      <option value="30">30 лет</option>
+      <option value="0" selected>весь срок ипотеки</option>
+    </select>
+  </label>
+  <label><input type="checkbox" id="disc"> Приводить к сегодняшним деньгам
+    <input class="num" type="number" id="discRate" value="8" step="0.5" min="0" disabled> % в год
+  </label>
+  <button class="btn btn-primary" id="run">Сравнить</button>
+</div>
+<p class="run-note">Деньги в будущем дешевле сегодняшних. Приведение переводит все платежи в сегодняшние рубли — иначе длинную ипотеку не сравнить с быстрыми тратами.</p>
+
+<div id="results">
+  <div class="panel">
+    <div class="panel-head"><h2>Итог</h2></div>
+    <div class="verdict" id="verdict"></div>
+  </div>
+
+  <div class="panel">
+    <div class="panel-head">
+      <h2>Платёж по месяцам</h2>
+      <div style="display:flex;gap:14px;align-items:center;flex-wrap:wrap">
+        <select id="mode">
+          <option value="all" selected>Все расходы за месяц</option>
+          <option value="reg">Только регулярные платежи</option>
+          <option value="cum">Накопленным итогом</option>
+        </select>
+        <div class="legend" id="legend"></div>
+      </div>
+    </div>
+    <div class="chart-wrap" id="chartWrap">
+      <svg id="chart" viewBox="0 0 980 380" role="img" aria-label="График платежей по месяцам"></svg>
+      <div class="tip" id="tip"></div>
+    </div>
+    <div class="brush" id="brush">
+      <div class="brush-track"></div>
+      <div class="brush-win" id="bwin"><span class="bh l"></span><span class="bh r"></span></div>
+      <div class="brush-lbl"><span id="bl"></span><span id="br"></span></div>
+      <div class="brush-hint">двойное нажатие — весь период</div>
+    </div>
+  </div>
+
+  <div class="panel">
+    <div class="panel-head"><h2>Куда уходят деньги</h2><div class="eyebrow" id="horizonNote"></div></div>
+    <div class="xscroll"><table id="tblCat"></table></div>
+    <div class="note" id="catNote"></div>
+  </div>
+
+  <div class="panel">
+    <div class="panel-head"><h2>Ключевые даты и показатели</h2></div>
+    <div class="xscroll"><table id="tblKey"></table></div>
+  </div>
+
+  <div class="panel">
+    <div class="panel-head"><h2>Расходы по годам</h2><div class="eyebrow">суммарно за календарный год</div></div>
+    <div class="scroll"><table id="tblYear"></table></div>
+  </div>
+</div>
+
+</div>
+<div class="toast" id="toast"></div>
+
+<script>
+/* ================= утилиты ================= */
+const MON=['янв','фев','мар','апр','май','июн','июл','авг','сен','окт','ноя','дек'];
+const nfmt=new Intl.NumberFormat('ru-RU',{maximumFractionDigits:0});
+const f0=n=>nfmt.format(Math.round(n||0));
+const rub=n=>f0(n)+' \u20BD';
+const mIdx=ym=>{if(!ym)return null;const p=String(ym).split('-');const y=+p[0],m=+p[1];
+  return (isFinite(y)&&isFinite(m)&&y>1900)?y*12+(m-1):null};
+const idxYm=i=>Math.floor(i/12)+'-'+String(i%12+1).padStart(2,'0');
+const idxLbl=i=>MON[((i%12)+12)%12]+' '+Math.floor(i/12);
+const el=(t,c,x)=>{const e=document.createElement(t);if(c)e.className=c;if(x!=null)e.textContent=x;return e};
+const esc=s=>String(s).replace(/[&<>"]/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[m]));
+let toastT;
+function toast(msg){const t=document.getElementById('toast');t.textContent=msg;t.classList.add('on');
+  clearTimeout(toastT);toastT=setTimeout(()=>t.classList.remove('on'),2400)}
+function prettyMoney(n){n=n||0;
+  if(n>=1e6)return (n/1e6).toFixed(n%1e6?1:0).replace('.',',')+' млн \u20BD';
+  if(n>=1e3)return Math.round(n/1e3)+' тыс \u20BD';
+  return f0(n)+' \u20BD'}
+const dLbl=ym=>{const i=mIdx(ym);return i==null?'—':idxLbl(i)};
+
+/* ================= блоки ================= */
+const FROM=[['keys','С получения ключей'],['deal','С даты сделки'],['manual','Указать дату']];
+const TYPES={
+  mortgage:{label:'Ипотека',fields:[
+    {k:'deal',t:'month',l:'Дата сделки',d:'2027-01'},
+    {k:'keys',t:'month',l:'Получение ключей',d:'2027-10'},
+    {k:'price',t:'money',l:'Стоимость недвижимости, \u20BD',d:15000000},
+    {k:'down',t:'money',l:'Первоначальный взнос, \u20BD',d:3000000},
+    {k:'rate',t:'pct',l:'Ставка, % годовых',d:12},
+    {k:'years',t:'num',l:'Срок, лет',d:30}
+  ]},
+  combo:{label:'Комбо-ипотека',fields:[
+    {k:'deal',t:'month',l:'Дата сделки',d:'2027-01'},
+    {k:'keys',t:'month',l:'Получение ключей',d:'2027-10'},
+    {k:'price',t:'money',l:'Стоимость недвижимости, \u20BD',d:15000000},
+    {k:'down',t:'money',l:'Первоначальный взнос, \u20BD',d:3000000},
+    {sub:'Льготная часть'},
+    {k:'sum1',t:'money',l:'Сумма по льготной ставке, \u20BD',d:6000000},
+    {k:'rate1',t:'pct',l:'Ставка, %',d:6},
+    {k:'years1',t:'num',l:'Срок, лет',d:30},
+    {sub:'Рыночная часть — остаток кредита'},
+    {k:'rate2',t:'pct',l:'Ставка, %',d:12},
+    {k:'years2',t:'num',l:'Срок, лет',d:30}
+  ]},
+  renovation:{label:'Ремонт',fields:[
+    {k:'auto',t:'chk',l:'Начало работ — с даты получения ключей',d:true},
+    {k:'date',t:'month',l:'Начало работ',d:'2027-10'},
+    {k:'months',t:'num',l:'Срок работ, мес',d:5},
+    {k:'sum',t:'money',l:'Стоимость, \u20BD',d:5000000},
+    {k:'inst',t:'num',l:'Рассрочка оплаты, мес',d:5,hint:'0 — одним платежом'},
+    {k:'live',t:'chk',l:'Можно жить во время ремонта — заезд не откладывается',d:false}
+  ]},
+  rent:{label:'Аренда',fields:[
+    {k:'cost',t:'money',l:'Стоимость месяца, \u20BD',d:50000},
+    {k:'index',t:'pct',l:'Индексация, % в год',d:0},
+    {k:'auto',t:'chk',l:'Срок считать автоматически — от сделки до заезда',d:true},
+    {k:'date',t:'month',l:'Начало аренды',d:'2027-01'},
+    {k:'months',t:'num',l:'Срок, мес',d:12}
+  ]},
+  monthly:{label:'Ежемесячные расходы',fields:[
+    {k:'name',t:'text',l:'Название',d:'ЖКХ и страховка',full:true},
+    {k:'cost',t:'money',l:'Сумма в месяц, \u20BD',d:12000},
+    {k:'index',t:'pct',l:'Индексация, % в год',d:0},
+    {k:'from',t:'sel',l:'Начало',d:'keys',opts:FROM},
+    {k:'date',t:'month',l:'Дата начала',d:'2027-10'},
+    {k:'months',t:'num',l:'Месяцев',d:0,hint:'0 — до конца горизонта',full:true}
+  ]},
+  onetime:{label:'Разовый расход',fields:[
+    {k:'name',t:'text',l:'Название',d:'Мебель и техника',full:true},
+    {k:'sum',t:'money',l:'Сумма, \u20BD',d:800000},
+    {k:'from',t:'sel',l:'Когда',d:'keys',opts:FROM},
+    {k:'date',t:'month',l:'Дата',d:'2027-10'}
+  ]}
+};
+const CATS=[
+  ['down','Первоначальный взнос'],
+  ['mortgage','Платежи по ипотеке'],
+  ['rent','Аренда'],
+  ['renovation','Ремонт'],
+  ['monthly','Ежемесячные расходы'],
+  ['onetime','Разовые расходы']
+];
+const REG=['mortgage','rent','monthly'];
+const AUTO_DATE={renovation:'auto',rent:'auto',monthly:'from',onetime:'from'};
+
+/* ================= состояние ================= */
+const state={A:{name:'Вариант 1',items:[]},B:{name:'Вариант 2',items:[]}};
+let uid=1, compared=false;
+const other=s=>s==='A'?'B':'A';
+const isOn=()=>document.getElementById('results').classList.contains('on');
+
+function newItem(type,vals){
+  const v={};TYPES[type].fields.forEach(f=>{if(f.k)v[f.k]=f.d});
+  if(vals)Object.assign(v,vals);
+  return{id:uid++,type,v,open:true};
+}
+function addItem(side,type,at){
+  const it=newItem(type),list=state[side].items;
+  if(at==null||at>list.length)list.push(it);else list.splice(at,0,it);
+  renderSide(side);softRecalc(true);
+}
+function moveItem(side,id){
+  const list=state[side].items,i=list.findIndex(x=>x.id===id);
+  if(i<0)return;
+  const [it]=list.splice(i,1);
+  state[other(side)].items.push(it);
+  renderSide(side);renderSide(other(side));softRecalc(true);
+  toast('«'+TYPES[it.type].label+'» перенесён в вариант '+(other(side)==='A'?'1':'2'));
+}
+function removeItem(side,id){
+  state[side].items=state[side].items.filter(i=>i.id!==id);
+  renderSide(side);softRecalc(true);
+}
+/* поле даты заблокировано, когда дата определяется автоматически */
+function dateLocked(item,key){
+  if(item.type==='renovation'&&key==='date')return !!item.v.auto;
+  if(item.type==='rent'&&(key==='date'||key==='months'))return !!item.v.auto;
+  if((item.type==='monthly'||item.type==='onetime')&&key==='date')return item.v.from!=='manual';
+  return false;
+}
+
+/* ================= перетаскивание ================= */
+let drag=null,scrollT=null,scrollDir=0,lastXY={x:0,y:0};
+/* перетаскивание доступно везде, кроме сенсорного ввода: там вместо него кнопки 1 и 2 */
+const coarse=()=>!!(window.matchMedia&&window.matchMedia('(pointer:coarse)').matches);
+const btnMode=()=>coarse()||window.innerWidth<=900;
+function startDrag(ev,payload,srcEl,label){
+  const noDrag=ev.pointerType==='touch'||coarse();
+  if(!noDrag)ev.preventDefault();
+  drag={payload,srcEl,label,moved:false,noDrag,
+        x0:ev.clientX,y0:ev.clientY,ghost:null,side:null,at:null};
+  window.addEventListener('pointermove',onDragMove);
+  window.addEventListener('pointerup',onDragEnd);
+  window.addEventListener('pointercancel',onDragEnd);
+}
+function makeGhost(){
+  const g=el('div');g.id='drag';
+  g.appendChild(el('div','chip-label',drag.label));
+  document.body.appendChild(g);drag.ghost=g;
+  if(drag.srcEl&&drag.payload.kind==='move')drag.srcEl.classList.add('ghosted');
+}
+function clearSlots(){document.querySelectorAll('.slot').forEach(s=>s.remove());
+  document.querySelectorAll('.side').forEach(s=>s.classList.remove('over'))}
+/* автопрокрутка страницы, когда палец у края экрана */
+function autoScroll(y){
+  const h=window.innerHeight;
+  scrollDir=y<90?-1:(y>h-90?1:0);
+  if(scrollDir&&!scrollT){
+    scrollT=setInterval(()=>{
+      window.scrollBy(0,scrollDir*16);
+      placeDrag(lastXY.x,lastXY.y);
+    },16);
+  }
+  if(!scrollDir&&scrollT){clearInterval(scrollT);scrollT=null}
+}
+function stopScroll(){if(scrollT){clearInterval(scrollT);scrollT=null}scrollDir=0}
+/* определяем, куда именно попадёт блок */
+function placeDrag(x,y){
+  clearSlots();
+  const under=document.elementFromPoint?document.elementFromPoint(x,y):null;
+  if(!under||!under.closest){drag.side=null;return}
+  const side=under.closest('.side');
+  if(!side){drag.side=null;return}
+  drag.side=side.dataset.side;side.classList.add('over');
+  const zone=side.querySelector('[data-drop]');
+  const nodes=[...zone.querySelectorAll('.node')].filter(n=>!n.classList.contains('ghosted'));
+  let at=nodes.length;
+  for(let i=0;i<nodes.length;i++){
+    const r=nodes[i].getBoundingClientRect();
+    if(y<r.top+r.height/2){at=i;break}
+  }
+  drag.at=at;
+  const slot=el('div','slot');
+  if(at>=nodes.length)zone.appendChild(slot);else zone.insertBefore(slot,nodes[at]);
+}
+function onDragMove(e){
+  if(!drag||drag.noDrag)return;
+  const thr=5;
+  if(!drag.moved){
+    if(Math.abs(e.clientX-drag.x0)<thr&&Math.abs(e.clientY-drag.y0)<thr)return;
+    drag.moved=true;makeGhost();
+  }
+  lastXY={x:e.clientX,y:e.clientY};
+  drag.ghost.style.left=(e.clientX+12)+'px';
+  drag.ghost.style.top=(e.clientY+12)+'px';
+  placeDrag(e.clientX,e.clientY);
+  autoScroll(e.clientY);
+}
+function onDragEnd(e){
+  window.removeEventListener('pointermove',onDragMove);
+  window.removeEventListener('pointerup',onDragEnd);
+  window.removeEventListener('pointercancel',onDragEnd);
+  stopScroll();
+  if(!drag)return;
+  const d=drag;drag=null;
+  if(d.ghost)d.ghost.remove();
+  if(d.srcEl)d.srcEl.classList.remove('ghosted');
+  clearSlots();
+  if(!d.moved){
+    /* прокрутка страницы пальцем не должна сворачивать карточку */
+    const slid=e&&e.clientX!=null&&(Math.abs(e.clientX-d.x0)>10||Math.abs(e.clientY-d.y0)>10);
+    const cancelled=e&&e.type==='pointercancel';
+    if(d.payload.kind==='move'&&!slid&&!cancelled){
+      const it=state[d.payload.side].items.find(i=>i.id===d.payload.id);
+      if(it){it.open=!it.open;d.srcEl.closest('.node').classList.toggle('collapsed')}
+    }
+    return;
+  }
+  if(d.side==null)return;
+  if(d.payload.kind==='new'){addItem(d.side,d.payload.type,d.at);return}
+  const from=d.payload.side,to=d.side,list=state[from].items;
+  const i=list.findIndex(x=>x.id===d.payload.id);
+  if(i<0)return;
+  const [it]=list.splice(i,1);
+  let at=d.at==null?state[to].items.length:d.at;
+  if(from===to&&i<at)at--;
+  state[to].items.splice(at,0,it);
+  renderSide(from);if(to!==from)renderSide(to);
+  softRecalc(true);
+}
+
+/* ================= палитра ================= */
+function renderChips(){
+  const box=document.getElementById('chips');box.innerHTML='';
+  Object.keys(TYPES).forEach(type=>{
+    const c=el('div','chip');
+    c.appendChild(el('div','chip-grip'));
+    c.appendChild(el('div','chip-label',TYPES[type].label));
+    const add=el('div','chip-add');
+    [['1','A','m-a'],['2','B','m-b']].forEach(o=>{
+      const b=el('button','mini '+o[2],o[0]);
+      b.title='Добавить в вариант '+o[0];
+      b.setAttribute('aria-label','Добавить «'+TYPES[type].label+'» в вариант '+o[0]);
+      b.addEventListener('pointerdown',e=>e.stopPropagation());
+      b.onclick=e=>{e.stopPropagation();addItem(o[1],type);
+        toast('«'+TYPES[type].label+'» добавлен в вариант '+o[0])};
+      add.appendChild(b);
+    });
+    c.appendChild(add);
+    c.addEventListener('pointerdown',e=>{if(e.button)return;startDrag(e,{kind:'new',type},c,TYPES[type].label)});
+    box.appendChild(c);
+  });
+}
+
+/* ================= карточки ================= */
+const loanOf=v=>Math.max(0,(v.price||0)-(v.down||0));
+const firstPay=v=>{const d=mIdx(v.deal);return d==null?'—':idxLbl(d+1)};
+function infoText(it){
+  const v=it.v;
+  if(it.type==='mortgage')return 'Кредит '+rub(loanOf(v))+' · первый платёж '+firstPay(v);
+  if(it.type==='combo'){
+    const cr=loanOf(v),s1=Math.min(v.sum1||0,cr),s2=Math.max(0,cr-s1);
+    return 'Кредит '+rub(cr)+' = льготная '+rub(s1)+' + рыночная '+rub(s2)+' · первый платёж '+firstPay(v);
+  }
+  return '';
+}
+function summarize(it){
+  const v=it.v;
+  switch(it.type){
+    case 'mortgage':return prettyMoney(loanOf(v))+' · '+v.rate+'% · '+v.years+' л · ключи '+dLbl(v.keys);
+    case 'combo':{const cr=loanOf(v),s1=Math.min(v.sum1||0,cr);
+      return prettyMoney(cr)+' · '+v.rate1+'% + '+v.rate2+'% · ключи '+dLbl(v.keys)}
+    case 'renovation':return prettyMoney(v.sum)+' · '+(v.inst>0?v.inst+' мес':'сразу')+' · с '+dLbl(v.date);
+    case 'rent':return prettyMoney(v.cost)+'/мес · '+(v.months||0)+' мес'+(v.auto?' авто':'');
+    case 'monthly':return (v.name||'')+' · '+prettyMoney(v.cost)+'/мес с '+dLbl(v.date);
+    case 'onetime':return (v.name||'')+' · '+prettyMoney(v.sum)+' · '+dLbl(v.date);
+  }
+  return '';
+}
+function renderSide(side){
+  const zone=document.querySelector('[data-drop="'+side+'"]');
+  zone.innerHTML='';
+  if(!state[side].items.length){
+    zone.appendChild(el('div','empty',coarse()
+      ?'Пусто. Добавьте блоки кнопкой '+(side==='A'?'1':'2')+' в списке сверху'
+      :(btnMode()?'Перетащите сюда блоки или нажмите '+(side==='A'?'1':'2')+' на блоке'
+                 :'Перетащите сюда блоки параметров')));return;
+  }
+  state[side].items.forEach(item=>{
+    const T=TYPES[item.type];
+    const node=el('div','node'+(item.open?'':' collapsed'));
+    node.dataset.id=item.id;
+
+    const head=el('div','node-head');
+    head.appendChild(el('div','node-bar'));
+    head.appendChild(el('div','node-title',T.label));
+    const sum=el('div','node-sum',summarize(item));head.appendChild(sum);
+    const mv=el('button','node-move',side==='A'?'\u2192 2':'1 \u2190');
+    mv.title='Перенести в другой вариант';
+    mv.addEventListener('pointerdown',e=>e.stopPropagation());
+    mv.onclick=e=>{e.stopPropagation();moveItem(side,item.id)};
+    head.appendChild(mv);
+    const x=el('button','node-x','\u00D7');x.title='Убрать блок';x.setAttribute('aria-label','Убрать блок');
+    x.addEventListener('pointerdown',e=>e.stopPropagation());
+    x.onclick=e=>{e.stopPropagation();removeItem(side,item.id)};
+    head.appendChild(x);
+    head.addEventListener('pointerdown',e=>{if(e.button)return;startDrag(e,{kind:'move',side,id:item.id},head,T.label)});
+    node.appendChild(head);
+
+    const warn=el('div','node-warn');warn.dataset.warn=item.id;node.appendChild(warn);
+
+    const body=el('div','node-body');
+    let info=null;
+    if(infoText(item)){info=el('div','info',infoText(item));body.appendChild(info)}
+    const refresh=()=>{sum.textContent=summarize(item);if(info)info.textContent=infoText(item)};
+
+    T.fields.forEach(f=>{
+      if(f.sub){body.appendChild(el('div','sub',f.sub));return}
+      if(f.t==='chk'){
+        const lab=el('label','chk');
+        const inp=document.createElement('input');inp.type='checkbox';inp.checked=!!item.v[f.k];
+        inp.addEventListener('pointerdown',e=>e.stopPropagation());
+        inp.onchange=()=>{item.v[f.k]=inp.checked;renderSide(side);softRecalc(true)};
+        lab.appendChild(inp);lab.appendChild(el('span',null,f.l));
+        body.appendChild(lab);return;
+      }
+      const w=el('div','fld'+(f.full?' full':''));
+      w.appendChild(el('label',null,f.l));
+      let inp;
+      if(f.t==='sel'){
+        inp=document.createElement('select');
+        f.opts.forEach(o=>{const op=document.createElement('option');op.value=o[0];op.textContent=o[1];inp.appendChild(op)});
+        inp.value=item.v[f.k];
+        inp.onchange=()=>{item.v[f.k]=inp.value;renderSide(side);softRecalc(true)};
+      }else{
+        inp=document.createElement('input');
+        inp.type=f.t==='month'?'month':(f.t==='text'?'text':'number');
+        if(f.t==='money'){inp.step=10000;inp.min=0}
+        if(f.t==='pct'){inp.step=.1;inp.min=0}
+        if(f.t==='num'){inp.step=1;inp.min=0}
+        inp.value=item.v[f.k]==null?'':item.v[f.k];
+        if(dateLocked(item,f.k)){inp.disabled=true;inp.dataset.auto=item.id+':'+f.k}
+        inp.oninput=()=>{
+          item.v[f.k]=(f.t==='month'||f.t==='text')?inp.value:(parseFloat(inp.value)||0);
+          refresh();
+          if(f.t==='money')w.querySelector('.hint').textContent=prettyMoney(item.v[f.k]);
+          softRecalc();
+        };
+      }
+      inp.addEventListener('pointerdown',e=>e.stopPropagation());
+      w.appendChild(inp);
+      if(f.t==='money')w.appendChild(el('div','hint',prettyMoney(item.v[f.k])));
+      else if(f.hint)w.appendChild(el('div','hint',f.hint));
+      body.appendChild(w);
+    });
+    node.appendChild(body);
+    zone.appendChild(node);
+  });
+}
+/* обновление авто-полей без перерисовки — чтобы не терять фокус при вводе */
+function syncAuto(side){
+  state[side].items.forEach(i=>{
+    if(!AUTO_DATE[i.type])return;
+    ['date','months'].forEach(k=>{
+      const inp=document.querySelector('[data-auto="'+i.id+':'+k+'"]');
+      if(inp&&i.v[k]!=null&&String(inp.value)!==String(i.v[k]))inp.value=i.v[k];
+    });
+    const s=document.querySelector('.node[data-id="'+i.id+'"] .node-sum');
+    if(s)s.textContent=summarize(i);
+  });
+}
+function clearWarnings(){document.querySelectorAll('.node-warn').forEach(w=>w.textContent='')}
+function showWarnings(V){
+  const byId={};
+  V.warn.forEach(w=>{byId[w.id]=byId[w.id]?byId[w.id]+' · '+w.text:w.text});
+  Object.keys(byId).forEach(id=>{
+    const box=document.querySelector('[data-warn="'+id+'"]');
+    if(box)box.textContent=byId[id];
+  });
+}
+
+/* ================= расчёт ================= */
+function annuity(S,ratePct,years){
+  const n=Math.round((years||0)*12),i=(ratePct||0)/100/12;
+  if(n<=0||!S||S<=0)return{pay:0,n:0};
+  return{pay:i===0?S/n:S*i/(1-Math.pow(1+i,-n)),n};
+}
+function buildVariant(side){
+  const items=state[side].items;
+  const all=t=>items.filter(i=>i.type===t);
+  const flows=new Map(),warn=[];
+  const push=(i,cat,amt)=>{
+    if(!amt||i==null||!isFinite(i))return;
+    if(!flows.has(i))flows.set(i,{});
+    const o=flows.get(i);o[cat]=(o[cat]||0)+amt;
+  };
+
+  /* --- даты сделки и ключей берутся из кредитных блоков --- */
+  const loanBlocks=all('mortgage').concat(all('combo'));
+  const dealDates=loanBlocks.map(p=>mIdx(p.v.deal)).filter(x=>x!=null);
+  const buyIdx=dealDates.length?Math.min.apply(null,dealDates):null;
+  const keyDates=loanBlocks.map(p=>mIdx(p.v.keys)).filter(x=>x!=null);
+  let accessIdx=keyDates.length?Math.max.apply(null,keyDates):buyIdx;
+  loanBlocks.forEach(p=>{
+    const b=mIdx(p.v.deal),a=mIdx(p.v.keys);
+    if(b!=null&&a!=null&&a<b)warn.push({id:p.id,text:'Ключи раньше даты сделки'});
+  });
+  const anchor=(mode,id,what)=>{
+    const t=mode==='deal'?buyIdx:accessIdx;
+    if(t==null)warn.push({id,text:'Добавьте блок «Ипотека» или «Комбо-ипотека» — не от чего считать '+what});
+    return t;
+  };
+
+  /* --- кредиты --- */
+  const defs=[];let price=0,downSum=0,loanSum=0;
+  const addLoan=(it,parts)=>{
+    const deal=mIdx(it.v.deal);
+    if(deal==null){warn.push({id:it.id,text:'Не задана дата сделки'});return}
+    if(loanOf(it.v)<=0&&(it.v.price||0)>0)warn.push({id:it.id,text:'Взнос покрывает всю стоимость — кредита нет'});
+    price+=it.v.price||0;
+    const dw=Math.min(it.v.down||0,it.v.price||0);
+    downSum+=dw;
+    push(deal,'down',dw);
+    parts.forEach(p=>{if(p.S>0&&p.years>0){defs.push({start:deal+1,...p});loanSum+=p.S}});
+  };
+  all('mortgage').forEach(m=>addLoan(m,[{S:loanOf(m.v),rate:m.v.rate||0,years:m.v.years}]));
+  all('combo').forEach(c=>{
+    const cr=loanOf(c.v),s1=Math.min(c.v.sum1||0,cr),s2=Math.max(0,cr-s1);
+    addLoan(c,[{S:s1,rate:c.v.rate1||0,years:c.v.years1},{S:s2,rate:c.v.rate2||0,years:c.v.years2}]);
+  });
+  const sim=simulate(defs);
+  sim.flows.forEach(f=>push(f[0],f[1],f[2]));
+  const loanEnd=sim.end,interest=sim.interest,startPay=sim.startPay;
+
+  /* --- ремонт --- */
+  let renoEnd=null,renoCost=0;
+  all('renovation').forEach(r=>{
+    let st;
+    if(r.v.auto){
+      st=anchor('keys',r.id,'начало работ');
+      if(st==null)return;
+      r.v.date=idxYm(st);
+    }else{
+      st=mIdx(r.v.date);
+      if(st==null)return;
+      if(accessIdx!=null&&st<accessIdx)warn.push({id:r.id,text:'Ремонт начинается раньше получения ключей'});
+    }
+    const work=Math.max(1,Math.round(r.v.months||1));
+    if(!r.v.live){const e=st+work;renoEnd=renoEnd==null?e:Math.max(renoEnd,e)}
+    const cost=r.v.sum||0;renoCost+=cost;
+    const inst=Math.max(0,Math.round(r.v.inst||0));
+    if(inst>0){const per=cost/inst;for(let k=0;k<inst;k++)push(st+k,'renovation',per)}
+    else push(st,'renovation',cost);
+  });
+  let moveIn=accessIdx;
+  if(renoEnd!=null)moveIn=accessIdx==null?renoEnd:Math.max(accessIdx,renoEnd);
+
+  /* --- аренда --- */
+  let rentMonths=0;
+  all('rent').forEach(r=>{
+    let st,mo;
+    if(r.v.auto){
+      st=buyIdx!=null?buyIdx:accessIdx;
+      if(st==null){warn.push({id:r.id,text:'Добавьте блок «Ипотека» или «Комбо-ипотека» — не от чего считать срок'});return}
+      mo=Math.max(0,(moveIn==null?st:moveIn)-st);
+      r.v.date=idxYm(st);r.v.months=mo;
+    }else{st=mIdx(r.v.date);mo=Math.max(0,Math.round(r.v.months||0))}
+    if(st==null)return;
+    rentMonths=Math.max(rentMonths,mo);
+    const idx=(r.v.index||0)/100;
+    for(let k=0;k<mo;k++)push(st+k,'rent',(r.v.cost||0)*Math.pow(1+idx,Math.floor(k/12)));
+  });
+
+  /* --- прочие расходы --- */
+  const startOf=it=>{
+    if(it.v.from==='manual')return mIdx(it.v.date);
+    const t=anchor(it.v.from,it.id,'дату начала');
+    if(t!=null)it.v.date=idxYm(t);
+    return t;
+  };
+  all('monthly').forEach(it=>{
+    const st=startOf(it);if(st==null)return;
+    const n=Math.round(it.v.months||0);
+    const lim=n>0?n:Math.max(0,(loanEnd!=null?loanEnd:st+359)-st+1);
+    const idx=(it.v.index||0)/100;
+    for(let k=0;k<lim;k++)push(st+k,'monthly',(it.v.cost||0)*Math.pow(1+idx,Math.floor(k/12)));
+  });
+  all('onetime').forEach(it=>{const st=startOf(it);push(st,'onetime',it.v.sum||0)});
+
+  const keys=Array.from(flows.keys());
+  return{
+    side,name:state[side].name,flows,warn,
+    min:keys.length?Math.min.apply(null,keys):null,
+    max:keys.length?Math.max.apply(null,keys):null,
+    buyIdx,accessIdx,moveIn,rentMonths,loanEnd,interest,startPay,
+    price,downSum,loanSum,renoCost,hasData:keys.length>0
+  };
+}
+/* помесячная амортизация — даёт точную дату закрытия и проценты */
+function simulate(defs){
+  const out={flows:[],end:null,interest:0,startPay:[]};
+  if(!defs.length)return out;
+  const L=defs.map(d=>{
+    const a=annuity(d.S,d.rate,d.years);
+    return{...d,bal:d.S,i:(d.rate||0)/100/12,pay:a.pay,active:a.n>0};
+  });
+  out.startPay=L.map(x=>x.pay);
+  const first=Math.min.apply(null,L.map(x=>x.start));
+  const guard=first+12*60;
+  for(let m=first;m<=guard&&L.some(x=>x.active);m++){
+    L.forEach(x=>{
+      if(!x.active||m<x.start)return;
+      const int=x.bal*x.i;
+      let princ=x.pay-int,due=x.pay;
+      if(princ>=x.bal-1e-6){princ=x.bal;due=x.bal+int}
+      x.bal-=princ;out.interest+=int;
+      out.flows.push([m,'mortgage',due]);
+      if(x.bal<=1e-6){x.active=false;out.end=out.end==null?m:Math.max(out.end,m)}
+    });
+  }
+  return out;
+}
+
+/* ================= сведение ================= */
+let last=null,view=null,recalcT;
+function softRecalc(now){
+  if(!compared)return;
+  clearTimeout(recalcT);
+  if(now)recalc();else recalcT=setTimeout(recalc,260);
+}
+function recalc(){
+  const A=buildVariant('A'),B=buildVariant('B');
+  syncAuto('A');syncAuto('B');
+  clearWarnings();showWarnings(A);showWarnings(B);
+  if(!A.hasData&&!B.hasData){toast('Добавьте блоки с параметрами — считать пока нечего');return}
+
+  const mins=[A.min,B.min].filter(x=>x!=null),maxs=[A.max,B.max].filter(x=>x!=null);
+  const start=Math.min.apply(null,mins);
+  const hSel=+document.getElementById('horizon').value;
+  const end=hSel>0?start+hSel*12-1:Math.max.apply(null,maxs);
+  const months=Math.max(1,end-start+1);
+
+  const dOn=document.getElementById('disc').checked;
+  const dRate=(parseFloat(document.getElementById('discRate').value)||0)/100;
+  const kf=i=>dOn?1/Math.pow(1+dRate,(i-start)/12):1;
+
+  const series=[A,B].map(V=>{
+    const arr=[];
+    for(let i=start;i<=end;i++){
+      const raw=V.flows.get(i)||{},o={};
+      let s=0;const k=kf(i);
+      for(const c in raw){o[c]=raw[c]*k;s+=o[c]}
+      arr.push({i,v:s,o});
+    }
+    return arr;
+  });
+  const totals=[0,1].map(k=>{
+    const t={};let sum=0,active=0,nom=0;
+    series[k].forEach(p=>{
+      for(const c in p.o){t[c]=(t[c]||0)+p.o[c];sum+=p.o[c]}
+      const raw=[A,B][k].flows.get(p.i);
+      if(raw)for(const c in raw)nom+=raw[c];
+      if(p.v>0.5)active++;
+    });
+    return{by:t,sum,active,nom};
+  });
+
+  const changed=!last||last.start!==start||last.end!==end;
+  last={A,B,series,totals,start,end,months,dOn,dRate};
+  if(changed||!view)view={s:start,e:end};
+  view.s=Math.max(start,Math.min(view.s,end));
+  view.e=Math.max(view.s,Math.min(view.e,end));
+  document.getElementById('results').classList.add('on');
+  drawVerdict();drawLegend();drawChart();drawBrush();drawTables();
+}
+/* Обычная нагрузка месяца — ипотека плюс регулярные ежемесячные расходы.
+   Перегрузка — месяцы, где поверх неё идут аренда или ремонт.
+   Первоначальный взнос и разовые траты не в счёт: это единовременные выплаты, а не нагрузка. */
+const baseOf=p=>(p.o.mortgage||0)+(p.o.monthly||0);
+const loadOf=p=>baseOf(p)+(p.o.rent||0)+(p.o.renovation||0);
+function median(a){if(!a.length)return 0;const s=a.slice().sort((x,y)=>x-y),m=s.length>>1;
+  return s.length%2?s[m]:(s[m-1]+s[m])/2}
+function heavy(k){
+  const arr=last.series[k];
+  let best=null,cur=null;
+  const close=()=>{if(cur&&(!best||cur.n>best.n||(cur.n===best.n&&cur.sum>best.sum)))best=cur;cur=null};
+  arr.forEach(p=>{
+    if(loadOf(p)-baseOf(p)>1){
+      if(!cur)cur={s:p.i,e:p.i,sum:0,n:0};
+      cur.e=p.i;cur.sum+=loadOf(p);cur.n++;
+    }else close();
+  });
+  close();
+  return best?{...best,mean:best.sum/best.n}:null;
+}
+const usualPay=k=>median(last.series[k].map(baseOf).filter(v=>v>0));
+const heavyLbl=k=>{const h=heavy(k);
+  return h?h.n+' мес · '+idxLbl(h.s)+' — '+idxLbl(h.e):'—'};
+
+function drawVerdict(){
+  const{A,B,totals,months,start,dOn}=last;
+  const yrs=(months/12).toFixed(months%12?1:0).replace('.',',');
+  const d=totals[0].sum-totals[1].sum;
+  const money=dOn?' (в деньгах '+Math.floor(start/12)+' года)':'';
+  let txt;
+  if(Math.abs(d)<1000)txt='За '+yrs+' г. оба сценария стоят почти одинаково — около <b>'+rub(totals[0].sum)+'</b>'+money+'.';
+  else if(d>0)txt='За '+yrs+' г. <b class="cA">'+esc(A.name)+'</b> обойдётся дороже на <b>'+rub(d)+'</b>'+money+': <b>'+rub(totals[0].sum)+'</b> против <b>'+rub(totals[1].sum)+'</b>.';
+  else txt='За '+yrs+' г. <b class="cB">'+esc(B.name)+'</b> обойдётся дороже на <b>'+rub(-d)+'</b>'+money+': <b>'+rub(totals[1].sum)+'</b> против <b>'+rub(totals[0].sum)+'</b>.';
+  const hTxt=(V,h,u)=>h?esc(V.name)+' — '+h.n+' мес ('+idxLbl(h.s)+' — '+idxLbl(h.e)+'), по '+rub(h.mean)+' в месяц вместо обычных '+rub(u):esc(V.name)+' — нагрузка ровная';
+  txt+='<br><span class="dim">Самый долгий период двойной нагрузки, когда поверх ипотеки идут аренда или ремонт: '+
+    hTxt(A,heavy(0),usualPay(0))+'; '+hTxt(B,heavy(1),usualPay(1))+'.</span>';
+  if(dOn){
+    const dn=totals[0].nom-totals[1].nom;
+    const y10=Math.round(100/Math.pow(1+last.dRate,10)),y20=Math.round(100/Math.pow(1+last.dRate,20));
+    txt+='<br><br><span class="dim">Без приведения было бы <b>'+rub(totals[0].nom)+'</b> против <b>'+rub(totals[1].nom)+'</b>, разница <b>'+rub(Math.abs(dn))+'</b> — '+
+      'она сжалась, потому что приведение бьёт по далёким платежам сильнее, чем по ближним: рубль через 10 лет учитывается как '+y10+' коп., через 20 лет — как '+y20+' коп.</span>';
+  }
+  document.getElementById('verdict').innerHTML=txt;
+  document.getElementById('horizonNote').textContent='горизонт '+yrs+' г. · '+idxLbl(last.start)+' — '+idxLbl(last.end)+(dOn?' · приведено к '+Math.floor(start/12)+' году':'');
+}
+function drawLegend(){
+  document.getElementById('legend').innerHTML=
+    '<span><i style="background:var(--a)"></i>'+esc(last.A.name)+'</span><span><i style="background:var(--b)"></i>'+esc(last.B.name)+'</span>';
+}
+
+/* ================= график ================= */
+let W=980,H=380,PAD={l:74,r:16,t:16,b:38},CMP=false;
+const COLS=['#1d4ed8','#b81457'];   // подменяются цветами темы
+let PAL={grid:'#e8ecf1',gridSoft:'#eef1f5',axis:'#8b95a1',zero:'#aeb8c4',card:'#fff',ink:'#151a21',area:'.07'};
+function readPalette(){
+  const cs=getComputedStyle(document.documentElement);
+  const v=(n,d)=>(cs.getPropertyValue(n)||'').trim()||d;
+  PAL={grid:v('--grid','#e8ecf1'),gridSoft:v('--grid-soft','#eef1f5'),axis:v('--axis','#8b95a1'),
+       zero:v('--zero','#aeb8c4'),card:v('--card','#fff'),ink:v('--ink','#151a21'),area:v('--area-op','.07')};
+  COLS[0]=v('--a','#1d4ed8');COLS[1]=v('--b','#b81457');
+}
+function chartMetrics(){
+  readPalette();
+  CMP=window.innerWidth<=700;
+  W=CMP?400:980;H=CMP?280:380;
+  PAD=CMP?{l:46,r:8,t:10,b:26}:{l:74,r:16,t:16,b:38};
+  document.getElementById('chart').setAttribute('viewBox','0 0 '+W+' '+H);
+  const br=document.getElementById('brush');
+  br.style.marginLeft='calc(6px + '+(PAD.l/W*100).toFixed(2)+'%)';
+  br.style.marginRight='calc(6px + '+(PAD.r/W*100).toFixed(2)+'%)';
+}
+function niceNum(x){if(x<=0)return 1;const e=Math.floor(Math.log10(x)),f=x/Math.pow(10,e);
+  const n=f<=1?1:f<=2?2:f<=2.5?2.5:f<=5?5:10;return n*Math.pow(10,e)}
+function axisMoney(v){if(v===0)return '0';
+  if(v>=1e6)return (v/1e6).toFixed(v%1e6?1:0).replace('.',',')+(CMP?' м':' млн');
+  return Math.round(v/1e3)+(CMP?' т':' тыс')}
+function transform(){
+  const mode=document.getElementById('mode').value;
+  return last.series.map(arr=>{
+    let acc=0;
+    return arr.map(p=>{
+      let v;
+      if(mode==='reg'){v=0;REG.forEach(c=>{v+=p.o[c]||0})}
+      else if(mode==='cum'){acc+=p.v;v=acc}
+      else v=p.v;
+      return{i:p.i,v};
+    });
+  });
+}
+function drawChart(){
+  chartMetrics();
+  const full=transform();
+  const vs=view.s,ve=view.e,months=ve-vs+1;
+  const series=full.map(a=>a.slice(vs-last.start,ve-last.start+1));
+  const svg=document.getElementById('chart');
+  let maxV=1;series.forEach(a=>a.forEach(p=>{if(p.v>maxV)maxV=p.v}));
+  const step=niceNum(maxV/(CMP?4:5)),top=Math.ceil(maxV/step)*step;
+  const iw=W-PAD.l-PAD.r,ih=H-PAD.t-PAD.b;
+  const X=i=>PAD.l+(i-vs)/months*iw, Y=v=>PAD.t+ih-(v/top)*ih;
+  let s='';
+  for(let v=0;v<=top+1e-6;v+=step){
+    const y=Y(v);
+    s+='<line x1="'+PAD.l+'" y1="'+y.toFixed(1)+'" x2="'+(W-PAD.r)+'" y2="'+y.toFixed(1)+'" stroke="'+(v===0?PAL.zero:PAL.grid)+'"/>';
+    s+='<text x="'+(PAD.l-9)+'" y="'+(y+4).toFixed(1)+'" text-anchor="end" font-family="ui-monospace,monospace" font-size="11" fill="'+PAL.axis+'">'+axisMoney(v)+'</text>';
+  }
+  if(months<=36){
+    const stepM=CMP?(months<=8?1:(months<=16?3:6)):(months<=14?1:(months<=24?2:3));
+    for(let i=Math.ceil(vs/stepM)*stepM;i<=ve;i+=stepM){
+      const x=X(i+.5);
+      s+='<line x1="'+x.toFixed(1)+'" y1="'+PAD.t+'" x2="'+x.toFixed(1)+'" y2="'+(PAD.t+ih)+'" stroke="'+PAL.gridSoft+'"/>';
+      s+='<text x="'+x.toFixed(1)+'" y="'+(H-(CMP?8:14))+'" text-anchor="middle" font-family="ui-monospace,monospace" font-size="10.5" fill="'+PAL.axis+'">'+idxLbl(i)+'</text>';
+    }
+  }else{
+    const yearStep=Math.max(1,Math.ceil(months/12/(CMP?4:9)));
+    for(let y=Math.ceil(vs/12);y*12<=ve;y+=yearStep){
+      const x=X(y*12);
+      s+='<line x1="'+x.toFixed(1)+'" y1="'+PAD.t+'" x2="'+x.toFixed(1)+'" y2="'+(PAD.t+ih)+'" stroke="'+PAL.grid+'"/>';
+      s+='<text x="'+x.toFixed(1)+'" y="'+(H-(CMP?8:14))+'" text-anchor="middle" font-family="ui-monospace,monospace" font-size="11" fill="'+PAL.axis+'">'+y+'</text>';
+    }
+  }
+  series.forEach((arr,k)=>{
+    let d='';
+    arr.forEach((p,j)=>{
+      const x0=X(p.i),x1=X(p.i+1),y=Y(p.v);
+      d+=(j===0?'M'+x0.toFixed(1)+','+y.toFixed(1):'L'+x0.toFixed(1)+','+y.toFixed(1))+'L'+x1.toFixed(1)+','+y.toFixed(1);
+    });
+    s+='<path d="'+d+'L'+X(ve+1).toFixed(1)+','+Y(0).toFixed(1)+'L'+X(vs).toFixed(1)+','+Y(0).toFixed(1)+'Z" fill="'+COLS[k]+'" opacity="'+PAL.area+'"/>';
+    s+='<path d="'+d+'" fill="none" stroke="'+COLS[k]+'" stroke-width="2" stroke-linejoin="round"/>';
+  });
+  s+='<line id="cursor" x1="0" y1="'+PAD.t+'" x2="0" y2="'+(PAD.t+ih)+'" stroke="'+PAL.ink+'" stroke-dasharray="3 3" opacity="0"/>';
+  s+='<circle id="dA" r="4" fill="'+PAL.card+'" stroke="'+COLS[0]+'" stroke-width="2" opacity="0"/>';
+  s+='<circle id="dB" r="4" fill="'+PAL.card+'" stroke="'+COLS[1]+'" stroke-width="2" opacity="0"/>';
+  s+='<rect id="hit" x="'+PAD.l+'" y="'+PAD.t+'" width="'+iw+'" height="'+ih+'" fill="transparent"/>';
+  svg.innerHTML=s;
+
+  const hit=svg.querySelector('#hit'),cur=svg.querySelector('#cursor'),
+        dA=svg.querySelector('#dA'),dB=svg.querySelector('#dB'),
+        tip=document.getElementById('tip'),wrap=document.getElementById('chartWrap');
+  function move(ev){
+    const r=svg.getBoundingClientRect();
+    const cx=ev.touches?ev.touches[0].clientX:ev.clientX;
+    const px=(cx-r.left)/r.width*W;
+    let i=Math.floor(vs+(px-PAD.l)/iw*months);
+    i=Math.max(vs,Math.min(ve,i));
+    const j=i-vs,x=X(i+.5),a=series[0][j],b=series[1][j];
+    cur.setAttribute('x1',x);cur.setAttribute('x2',x);cur.setAttribute('opacity','1');
+    dA.setAttribute('cx',x);dA.setAttribute('cy',Y(a.v));dA.setAttribute('opacity','1');
+    dB.setAttribute('cx',x);dB.setAttribute('cy',Y(b.v));dB.setAttribute('opacity','1');
+    tip.innerHTML='<div class="t-d">'+idxLbl(i)+'</div>'+
+      '<div class="t-r"><span><i style="background:'+COLS[0]+'"></i>'+esc(last.A.name)+'</span><b>'+rub(a.v)+'</b></div>'+
+      '<div class="t-r"><span><i style="background:'+COLS[1]+'"></i>'+esc(last.B.name)+'</span><b>'+rub(b.v)+'</b></div>';
+    tip.style.opacity='1';
+    const wr=wrap.getBoundingClientRect();
+    const px2=x/W*r.width+(r.left-wr.left);
+    tip.style.left=Math.min(Math.max(8,px2+14),Math.max(8,wr.width-tip.offsetWidth-8))+'px';
+    tip.style.top='18px';
+  }
+  hit.addEventListener('mousemove',move);
+  hit.addEventListener('touchstart',move,{passive:true});
+  hit.addEventListener('touchmove',e=>{e.preventDefault();move(e)},{passive:false});
+  hit.addEventListener('mouseleave',()=>{tip.style.opacity='0';
+    [cur,dA,dB].forEach(n=>n.setAttribute('opacity','0'))});
+}
+
+/* ================= ползунок диапазона ================= */
+function drawBrush(){
+  if(!last)return;
+  const total=last.end-last.start+1;
+  const win=document.getElementById('bwin');
+  win.style.left=((view.s-last.start)/total*100)+'%';
+  win.style.width=((view.e-view.s+1)/total*100)+'%';
+  document.getElementById('bl').textContent=idxLbl(view.s);
+  document.getElementById('br').textContent=idxLbl(view.e);
+}
+(function initBrush(){
+  const brush=document.getElementById('brush');
+  const MIN=4;
+  let st=null;
+  brush.addEventListener('pointerdown',e=>{
+    if(!last)return;
+    const rect=brush.getBoundingClientRect(),total=last.end-last.start+1;
+    const at=x=>last.start+Math.floor((x-rect.left)/rect.width*total);
+    const cls=e.target.className||'';
+    let kind='jump';
+    if(typeof cls==='string'&&cls.indexOf('bh')>=0)kind=cls.indexOf(' l')>=0||cls.endsWith('l')?'l':'r';
+    else if(e.target.id==='bwin')kind='move';
+    if(kind==='jump'){
+      const w=view.e-view.s,c=at(e.clientX);
+      view.s=Math.max(last.start,Math.min(c-Math.round(w/2),last.end-w));
+      view.e=view.s+w;
+      drawChart();drawBrush();
+      kind='move';
+    }
+    st={kind,x0:e.clientX,s0:view.s,e0:view.e,rect,total};
+    try{brush.setPointerCapture(e.pointerId)}catch(_){}
+    e.preventDefault();
+  });
+  brush.addEventListener('pointermove',e=>{
+    if(!st||!last)return;
+    const d=Math.round((e.clientX-st.x0)/st.rect.width*st.total);
+    if(st.kind==='move'){
+      const w=st.e0-st.s0;
+      let s=Math.max(last.start,Math.min(st.s0+d,last.end-w));
+      view.s=s;view.e=s+w;
+    }else if(st.kind==='l'){
+      view.s=Math.max(last.start,Math.min(st.s0+d,view.e-MIN));
+    }else{
+      view.e=Math.min(last.end,Math.max(st.e0+d,view.s+MIN));
+    }
+    drawChart();drawBrush();
+  });
+  const up=e=>{if(st){st=null;try{brush.releasePointerCapture(e.pointerId)}catch(_){}}};
+  brush.addEventListener('pointerup',up);
+  brush.addEventListener('pointercancel',up);
+  brush.addEventListener('dblclick',()=>{
+    if(!last)return;
+    view={s:last.start,e:last.end};drawChart();drawBrush();
+  });
+})();
+
+/* ================= таблицы ================= */
+function drawTables(){
+  const{A,B,totals,series,dOn}=last;
+  const diff=(a,b)=>a===b?'<td class="dim">—</td>':'<td class="'+(a>b?'neg':'pos')+'">'+(a>b?'+':'\u2212')+rub(Math.abs(a-b))+'</td>';
+  let rows='';
+  CATS.forEach(c=>{
+    const a=totals[0].by[c[0]]||0,b=totals[1].by[c[0]]||0;
+    if(!a&&!b)return;
+    rows+='<tr><td>'+c[1]+'</td><td>'+rub(a)+'</td><td>'+rub(b)+'</td>'+diff(a,b)+'</tr>';
+  });
+  rows+='<tr class="total"><td>Всего за горизонт</td><td>'+rub(totals[0].sum)+'</td><td>'+rub(totals[1].sum)+'</td>'+diff(totals[0].sum,totals[1].sum)+'</tr>';
+  document.getElementById('tblCat').innerHTML=
+    '<thead><tr><th>Статья</th><th class="cA">'+esc(A.name)+'</th><th class="cB">'+esc(B.name)+'</th><th>Разница</th></tr></thead><tbody>'+rows+'</tbody>';
+  document.getElementById('catNote').textContent=
+    'Суммы в таблице — только за выбранный горизонт'+(dOn?', приведённые к сегодняшним деньгам':'')+
+    '. Проценты по кредиту в следующей таблице считаются за весь срок, до полного погашения.';
+
+  const dt=i=>(i==null||!isFinite(i))?'—':idxLbl(i);
+  const kr=(l,a,b,note)=>'<tr><td>'+l+(note?'<div class="dim" style="font-size:11px">'+note+'</div>':'')+'</td><td>'+a+'</td><td>'+b+'</td></tr>';
+  const pay=V=>V.startPay&&V.startPay.length?V.startPay.map(p=>rub(p)).join(' + '):'—';
+  let k='';
+  k+=kr('Дата сделки',dt(A.buyIdx),dt(B.buyIdx));
+  k+=kr('Получение ключей',dt(A.accessIdx),dt(B.accessIdx));
+  k+=kr('Заезд, конец аренды',dt(A.moveIn),dt(B.moveIn));
+  k+=kr('Месяцев аренды',A.rentMonths?A.rentMonths+' мес':'—',B.rentMonths?B.rentMonths+' мес':'—');
+  k+=kr('Стоимость недвижимости',A.price?rub(A.price):'—',B.price?rub(B.price):'—');
+  k+=kr('Первоначальный взнос',A.downSum?rub(A.downSum):'—',B.downSum?rub(B.downSum):'—');
+  k+=kr('Сумма кредита',A.loanSum?rub(A.loanSum):'—',B.loanSum?rub(B.loanSum):'—');
+  k+=kr('Платёж по кредиту',pay(A),pay(B),'по каждой части отдельно');
+  k+=kr('Проценты по кредиту',A.interest?rub(A.interest):'—',B.interest?rub(B.interest):'—','за весь срок');
+  k+=kr('Кредит закрывается',dt(A.loanEnd),dt(B.loanEnd));
+  k+=kr('Ремонт',A.renoCost?rub(A.renoCost):'—',B.renoCost?rub(B.renoCost):'—');
+  k+=kr('Период двойной нагрузки',heavyLbl(0),heavyLbl(1),'подряд идущие месяцы, где сверх ипотеки идут аренда или ремонт');
+  k+=kr('Платёж в этот период',heavy(0)?rub(heavy(0).mean)+' в мес':'—',heavy(1)?rub(heavy(1).mean)+' в мес':'—','без разовых выплат');
+  k+=kr('Обычный платёж',rub(usualPay(0))+' в мес',rub(usualPay(1))+' в мес','ипотека и ежемесячные расходы, без наложений');
+  k+=kr('Средний платёж',rub(totals[0].sum/Math.max(1,totals[0].active)),rub(totals[1].sum/Math.max(1,totals[1].active)),'по месяцам, где были расходы');
+  document.getElementById('tblKey').innerHTML=
+    '<thead><tr><th>Показатель</th><th class="cA">'+esc(A.name)+'</th><th class="cB">'+esc(B.name)+'</th></tr></thead><tbody>'+k+'</tbody>';
+
+  const years={};
+  series.forEach((arr,idx)=>arr.forEach(p=>{
+    const y=Math.floor(p.i/12);
+    if(!years[y])years[y]=[0,0];
+    years[y][idx]+=p.v;
+  }));
+  let yr='';
+  Object.keys(years).sort().forEach(y=>{
+    const a=years[y][0],b=years[y][1];
+    yr+='<tr><td>'+y+'</td><td>'+rub(a)+'</td><td>'+rub(b)+'</td>'+diff(a,b)+'</tr>';
+  });
+  document.getElementById('tblYear').innerHTML=
+    '<thead><tr><th>Год</th><th class="cA">'+esc(A.name)+'</th><th class="cB">'+esc(B.name)+'</th><th>Разница</th></tr></thead><tbody>'+yr+'</tbody>';
+}
+
+/* ================= выгрузка ================= */
+function exportCSV(){
+  if(!last){toast('Сначала нажмите «Сравнить»');return}
+  const{A,B,series,totals,start,end}=last;
+  const used=CATS.filter(c=>totals[0].by[c[0]]||totals[1].by[c[0]]);
+  const q=s=>'"'+String(s).replace(/"/g,'""')+'"';
+  const head=['Месяц'];
+  [A,B].forEach(V=>{used.forEach(c=>head.push(V.name+': '+c[1]));head.push(V.name+': итого')});
+  const lines=[head.map(q).join(';')];
+  for(let i=start;i<=end;i++){
+    const j=i-start,row=[q(idxLbl(i))];
+    [0,1].forEach(k=>{
+      const p=series[k][j];
+      used.forEach(c=>row.push(Math.round(p.o[c[0]]||0)));
+      row.push(Math.round(p.v));
+    });
+    lines.push(row.join(';'));
+  }
+  lines.push('');
+  lines.push([q('Итого за горизонт'),q(A.name),q(B.name)].join(';'));
+  used.forEach(c=>lines.push([q(c[1]),Math.round(totals[0].by[c[0]]||0),Math.round(totals[1].by[c[0]]||0)].join(';')));
+  lines.push([q('Всего'),Math.round(totals[0].sum),Math.round(totals[1].sum)].join(';'));
+  lines.push([q('Проценты по кредиту за весь срок'),Math.round(A.interest),Math.round(B.interest)].join(';'));
+  const blob=new Blob(['\ufeff'+lines.join('\r\n')],{type:'text/csv;charset=utf-8'});
+  const a=document.createElement('a');
+  a.href=URL.createObjectURL(blob);a.download='sravnenie-'+idxYm(start)+'.csv';
+  document.body.appendChild(a);a.click();
+  setTimeout(()=>{URL.revokeObjectURL(a.href);a.remove()},0);
+  toast('CSV скачан');
+}
+
+/* ================= пример ================= */
+function loadPreset(){
+  state.A={name:'Новостройка, комбо-ипотека',items:[
+    newItem('combo',{deal:'2027-01',keys:'2027-10',price:15000000,down:3000000,sum1:6000000,rate1:6,years1:30,rate2:12,years2:30}),
+    newItem('renovation',{auto:true,months:5,sum:5000000,inst:5,live:false}),
+    newItem('rent',{cost:50000,index:7,auto:true}),
+    newItem('monthly',{name:'ЖКХ и страховка',cost:12000,index:5,from:'keys',months:0})
+  ]};
+  state.B={name:'Вторичка',items:[
+    newItem('mortgage',{deal:'2026-09',keys:'2026-09',price:15000000,down:3000000,rate:12,years:30}),
+    newItem('renovation',{auto:true,months:2,sum:1500000,inst:2,live:true}),
+    newItem('monthly',{name:'ЖКХ и страховка',cost:12000,index:5,from:'keys',months:0})
+  ]};
+  state.A.items.forEach(i=>i.open=false);state.B.items.forEach(i=>i.open=false);
+  document.querySelector('.side-name[data-side="A"]').value=state.A.name;
+  document.querySelector('.side-name[data-side="B"]').value=state.B.name;
+  renderSide('A');renderSide('B');
+  compared=true;view=null;recalc();
+}
+
+/* ================= управление ================= */
+document.querySelectorAll('.side-name').forEach(inp=>{
+  inp.addEventListener('input',()=>{
+    state[inp.dataset.side].name=inp.value||('Вариант '+(inp.dataset.side==='A'?'1':'2'));
+    softRecalc();
+  });
+});
+document.querySelectorAll('[data-copy]').forEach(b=>b.onclick=()=>{
+  const from=b.dataset.copy,to=other(from);
+  if(!state[from].items.length){toast('Секция пуста — копировать нечего');return}
+  if(state[to].items.length&&!confirm('Заменить содержимое второй секции?'))return;
+  state[to].items=state[from].items.map(i=>{const c=newItem(i.type,JSON.parse(JSON.stringify(i.v)));c.open=false;return c});
+  renderSide(to);softRecalc(true);
+  toast('Скопировано — поменяйте отличающиеся параметры');
+});
+document.querySelectorAll('[data-wipe]').forEach(b=>b.onclick=()=>{
+  const s=b.dataset.wipe;state[s].items=[];renderSide(s);softRecalc(true);
+});
+document.getElementById('run').onclick=()=>{
+  compared=true;recalc();
+  if(isOn())document.getElementById('results').scrollIntoView({behavior:'smooth',block:'start'});
+};
+document.getElementById('horizon').onchange=()=>{view=null;softRecalc(true)};
+document.getElementById('mode').onchange=()=>{if(isOn())drawChart()};
+document.getElementById('disc').onchange=e=>{
+  document.getElementById('discRate').disabled=!e.target.checked;softRecalc(true);
+};
+document.getElementById('discRate').oninput=()=>softRecalc();
+document.getElementById('preset').onclick=()=>{loadPreset();
+  document.getElementById('results').scrollIntoView({behavior:'smooth',block:'start'})};
+document.getElementById('csv').onclick=exportCSV;
+document.getElementById('clear').onclick=()=>{
+  state.A={name:'Вариант 1',items:[]};state.B={name:'Вариант 2',items:[]};
+  document.querySelector('.side-name[data-side="A"]').value='Вариант 1';
+  document.querySelector('.side-name[data-side="B"]').value='Вариант 2';
+  renderSide('A');renderSide('B');
+  compared=false;last=null;view=null;
+  document.getElementById('results').classList.remove('on');
+  toast('Всё очищено');
+};
+
+function layoutHint(){
+  document.querySelector('.palette-head p').textContent=coarse()
+    ?'Нажмите 1 или 2, чтобы добавить блок в нужный вариант, затем настройте параметры.'
+    :(btnMode()?'Перетащите блок в секцию или нажмите 1 либо 2 — и настройте параметры.'
+               :'Перетащите блок в любую секцию и настройте параметры.');
+}
+renderChips();layoutHint();renderSide('A');renderSide('B');
+/* ================= оформление ================= */
+const ICON={
+  sun:'<circle cx="12" cy="12" r="4.2"/><path d="M12 2.6v2M12 19.4v2M2.6 12h2M19.4 12h2M5.4 5.4l1.4 1.4M17.2 17.2l1.4 1.4M5.4 18.6l1.4-1.4M17.2 6.8l1.4-1.4"/>',
+  moon:'<path d="M20.5 14.8A8.6 8.6 0 0 1 9.2 3.5a8.6 8.6 0 1 0 11.3 11.3z"/>'
+};
+let themeManual=false;
+function applyTheme(t){
+  document.documentElement.dataset.theme=t;
+  const next=t==='dark'?'светлое':'тёмное';
+  const btn=document.getElementById('theme');
+  btn.innerHTML='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" '+
+    'stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">'+(t==='dark'?ICON.sun:ICON.moon)+'</svg>'+
+    '<span>'+(t==='dark'?'Светлая':'Тёмная')+'</span>';
+  btn.setAttribute('aria-label','Включить '+next+' оформление');
+  if(isOn())drawChart();
+}
+document.getElementById('theme').onclick=()=>{
+  themeManual=true;
+  applyTheme(document.documentElement.dataset.theme==='dark'?'light':'dark');
+};
+if(window.matchMedia){
+  const mq=window.matchMedia('(prefers-color-scheme: dark)');
+  const onTheme=e=>{if(!themeManual)applyTheme(e.matches?'dark':'light')};
+  if(mq.addEventListener)mq.addEventListener('change',onTheme);
+  else if(mq.addListener)mq.addListener(onTheme);
+}
+applyTheme(document.documentElement.dataset.theme||'light');
+let rT,wasTouch=btnMode();
+window.addEventListener('resize',()=>{
+  clearTimeout(rT);
+  rT=setTimeout(()=>{
+    if(isOn())drawChart();
+    if(btnMode()!==wasTouch){wasTouch=btnMode();layoutHint();renderSide('A');renderSide('B')}
+  },150);
+});
+</script>
+</body>
+</html>
