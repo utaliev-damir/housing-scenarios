@@ -192,6 +192,48 @@ tr.total td{font-weight:700;border-top:1.5px solid var(--line);background:var(--
 }
 :root[data-theme="dark"] .author:hover{color:#5bc0e8}
 :root[data-theme="dark"] .chip:hover{background:var(--surface-3)}
+/* ---------- вкладки и матрицы ---------- */
+.tabs{display:flex;gap:5px;margin-bottom:20px;border-bottom:1px solid var(--line)}
+.tab{border:1px solid transparent;border-bottom:none;background:transparent;padding:9px 17px;
+  font-family:var(--sans);font-size:13.5px;font-weight:650;color:var(--ink-3);cursor:pointer;
+  border-radius:var(--r) var(--r) 0 0;margin-bottom:-1px}
+.tab:hover{color:var(--ink)}
+.tab.on{background:var(--card);border-color:var(--line);color:var(--ink)}
+.lead{max-width:820px;margin:-6px 0 18px;font-size:13px;line-height:1.55;color:var(--ink-2)}
+.tpicker{display:flex;flex-wrap:wrap;gap:7px;margin-bottom:14px}
+.tpick{border:1px solid var(--line);background:var(--card);border-radius:var(--r);padding:8px 13px;
+  font-family:var(--sans);font-size:12.5px;font-weight:600;color:var(--ink-2);cursor:pointer;text-align:left}
+.tpick:hover{border-color:var(--ink-3);color:var(--ink)}
+.tpick.on{border-color:var(--a);color:var(--ink);background:var(--a-soft)}
+.tparams{background:var(--card);border:1px solid var(--line);border-radius:var(--r);padding:14px 15px;
+  margin-bottom:16px;display:grid;grid-template-columns:repeat(auto-fit,minmax(146px,1fr));gap:10px 14px}
+.tparams .sub2{grid-column:1/-1;font-size:10.5px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;
+  color:var(--ink-3);border-top:1px solid var(--line-soft);padding-top:10px}
+.tparams .sub2:first-child{border-top:none;padding-top:0}
+.heat{border-collapse:separate;border-spacing:0;font-family:var(--mono);font-size:12.5px;min-width:100%}
+.heat th,.heat td{padding:6px 10px;text-align:right;white-space:nowrap;border-bottom:1px solid var(--line-soft);border-right:1px solid var(--line-soft)}
+.heat thead th{position:sticky;top:0;z-index:3;background:var(--surface-2);color:var(--ink-2);
+  font-family:var(--sans);font-size:11px;font-weight:700;letter-spacing:.04em}
+.heat thead th.corner{left:0;z-index:4;text-align:left}
+.heat tbody th{position:sticky;left:0;z-index:2;background:var(--surface-2);font-weight:650;color:var(--ink)}
+.heat td{color:var(--ink)}
+.swipe{display:none;padding:8px 12px 0;font-size:11.5px;color:var(--ink-3)}
+.legend2{display:flex;align-items:center;gap:8px;font-size:11.5px;color:var(--ink-3)}
+.legend2 .bar{width:110px;height:9px;border-radius:5px}
+@media (max-width:640px){
+  .tabs{margin-bottom:14px}
+  .tab{flex:1;padding:9px 8px;font-size:13.5px;text-align:center}
+  .lead{font-size:12.5px;margin:-2px 0 14px}
+  .tparams{padding:12px;gap:9px 10px;grid-template-columns:1fr 1fr}
+  .tparams input{font-size:16px}
+  .tpicker{gap:6px;margin-bottom:12px}
+  .tpick{flex:1 1 100%;padding:9px 11px;font-size:12.5px;line-height:1.35}
+  .heat th,.heat td{padding:5px 7px;font-size:11px}
+  .heat thead th{font-size:9.5px;letter-spacing:0}
+  .heat tbody th{font-size:10.5px}
+  #mtxWrap{max-height:none}
+  .swipe{display:block}
+}
 .xscroll{overflow-x:auto}
 /* кнопки вариантов — в узком окне и на любом сенсорном экране */
 @media (max-width:900px),(pointer:coarse){
@@ -271,6 +313,13 @@ tr.total td{font-weight:700;border-top:1.5px solid var(--line);background:var(--
   </div>
 </header>
 
+<div class="tabs" role="tablist">
+  <button class="tab on" id="tab-scen-btn" role="tab" aria-selected="true">Сценарии</button>
+  <button class="tab" id="tab-mtx-btn" role="tab" aria-selected="false">Таблицы</button>
+</div>
+
+<section id="tab-scen">
+<p class="lead">Сравнение двух конкретных вариантов покупки во времени. Собираете каждый из блоков — ипотека, ремонт, аренда, расходы — и видите помесячный платёж, дату заезда, срок закрытия кредита и полную стоимость каждого сценария.</p>
 <section class="palette">
   <div class="palette-head">
     <div class="eyebrow">Блоки параметров</div>
@@ -368,6 +417,25 @@ tr.total td{font-weight:700;border-top:1.5px solid var(--line);background:var(--
     <div class="scroll"><table id="tblYear"></table></div>
   </div>
 </div>
+</section>
+
+<section id="tab-mtx" hidden>
+  <p class="lead">Матрицы «что если»: как меняются платёж, переплата и доступная стоимость при разных ставках, сроках и ценах. Дат, аренды и ремонта здесь нет, только сам кредит. Помогает прикинуть границы: какой платёж вы вытяните, до какой цены квартиры имеет смысл смотреть и сколько добавляет каждая лишняя пятилетка срока.</p>
+  <div class="tpicker" id="tpicker"></div>
+  <div class="tparams" id="tparams"></div>
+  <div class="panel">
+    <div class="panel-head">
+      <h2 id="mtxTitle"></h2>
+      <div style="display:flex;gap:12px;align-items:center;flex-wrap:wrap">
+        <div class="legend2" id="mtxLegend"></div>
+        <button class="btn" id="mtxCsv">Скачать CSV</button>
+      </div>
+    </div>
+    <div class="swipe">Таблица шире экрана — листайте вбок</div>
+    <div class="scroll" id="mtxWrap"></div>
+    <div class="note" id="mtxNote"></div>
+  </div>
+</section>
 
 </div>
 <div class="toast" id="toast"></div>
@@ -1310,6 +1378,211 @@ function layoutHint(){
     :(btnMode()?'Перетащите блок в секцию или нажмите 1 либо 2 — и настройте параметры.'
                :'Перетащите блок в любую секцию и настройте параметры.');
 }
+
+/* ================================================================
+   ВКЛАДКА «ТАБЛИЦЫ» — матрицы «что если» с тепловой заливкой
+   ================================================================ */
+const TP={          // параметры, общие для всех матриц
+  sav:5000000, price:20000000, years:30, rate:12, income:200000, share:40,
+  priceFrom:15000000, priceTo:26000000, priceStep:1000000,
+  rateFrom:5, rateTo:16, rateStep:1,
+  yearFrom:5, yearTo:30, yearStep:5
+};
+const TPF={
+  sav:{l:'Накоплено, \u20BD',t:'money',step:100000},
+  price:{l:'Стоимость квартиры, \u20BD',t:'money',step:500000},
+  years:{l:'Срок кредита, лет',t:'num',step:1},
+  rate:{l:'Ставка, %',t:'pct',step:.5},
+  income:{l:'Ежемесячный доход, \u20BD',t:'money',step:10000},
+  share:{l:'Комфортная доля дохода на платёж, %',t:'pct',step:5},
+  priceFrom:{l:'Стоимость от',t:'money',step:1000000},
+  priceTo:{l:'до',t:'money',step:1000000},
+  priceStep:{l:'шаг',t:'money',step:500000},
+  rateFrom:{l:'Ставка от, %',t:'pct',step:1},
+  rateTo:{l:'до, %',t:'pct',step:1},
+  rateStep:{l:'шаг, %',t:'pct',step:.5},
+  yearFrom:{l:'Срок от, лет',t:'num',step:1},
+  yearTo:{l:'до, лет',t:'num',step:1},
+  yearStep:{l:'шаг, лет',t:'num',step:1}
+};
+const GROUPS={   // имена намеренно не совпадают с одиночными параметрами price/rate/years
+  '@price':{title:'Диапазон стоимости',keys:['priceFrom','priceTo','priceStep']},
+  '@rate':{title:'Диапазон ставок',keys:['rateFrom','rateTo','rateStep']},
+  '@year':{title:'Диапазон сроков',keys:['yearFrom','yearTo','yearStep']}
+};
+
+function seq(from,to,step,cap){
+  const out=[];step=Math.abs(step)||1;
+  if(to<from)to=from;
+  for(let v=from;v<=to+1e-9&&out.length<cap;v+=step)out.push(+v.toFixed(6));
+  return out;
+}
+/* какой кредит потянет заданный платёж */
+function loanFromPay(P,ratePct,years){
+  const n=Math.round((years||0)*12),i=(ratePct||0)/100/12;
+  if(n<=0||P<=0)return 0;
+  return i===0?P*n:P*(1-Math.pow(1+i,-n))/i;
+}
+const payOf=(loan,rate,years)=>annuity(Math.max(0,loan),rate,years).pay;
+const limitPay=()=>TP.income*TP.share/100;
+
+const MTX={
+  pay_pr:{
+    name:'Платёж: стоимость × ставка',
+    title:'Ежемесячный платёж',
+    uses:['sav','years','income','share','@price','@rate'],
+    rowsF:()=>seq(TP.priceFrom,TP.priceTo,TP.priceStep,40),
+    colsF:()=>seq(TP.rateFrom,TP.rateTo,TP.rateStep,24),
+    rowH:'Стоимость квартиры',colH:'Ставка',
+    rowL:v=>f0(v),colL:v=>(+v).toFixed(v%1?1:0).replace('.',',')+'%',
+    cell:(price,rate)=>payOf(price-TP.sav,rate,TP.years),
+    color:'load',
+    note:()=>'Платёж по кредиту на '+TP.years+' лет при взносе '+rub(TP.sav)+
+      '. Зелёное — платёж укладывается в '+TP.share+'% дохода ('+rub(limitPay())+'), красное — выходит за них.'
+  },
+  pay_py:{
+    name:'Платёж: стоимость × срок',
+    title:'Ежемесячный платёж',
+    uses:['sav','rate','income','share','@price','@year'],
+    rowsF:()=>seq(TP.priceFrom,TP.priceTo,TP.priceStep,40),
+    colsF:()=>seq(TP.yearFrom,TP.yearTo,TP.yearStep,24),
+    rowH:'Стоимость квартиры',colH:'Срок кредита',
+    rowL:v=>f0(v),colL:v=>v+' л',
+    cell:(price,years)=>payOf(price-TP.sav,TP.rate,years),
+    color:'load',
+    note:()=>'Ставка '+TP.rate+'%, взнос '+rub(TP.sav)+
+      '. Видно, сколько снимает с платежа каждая пятилетка срока и где начинается ваш потолок в '+rub(limitPay())+'.'
+  },
+  over_ry:{
+    name:'Переплата банку: ставка × срок',
+    title:'Переплата за весь срок',
+    uses:['sav','price','@rate','@year'],
+    rowsF:()=>seq(TP.rateFrom,TP.rateTo,TP.rateStep,40),
+    colsF:()=>seq(TP.yearFrom,TP.yearTo,TP.yearStep,24),
+    rowH:'Ставка',colH:'Срок кредита',
+    rowL:v=>(+v).toFixed(v%1?1:0).replace('.',',')+'%',colL:v=>v+' л',
+    cell:(rate,years)=>{const loan=Math.max(0,TP.price-TP.sav);
+      return payOf(loan,rate,years)*Math.round(years*12)-loan},
+    color:'scale',
+    note:()=>'Кредит '+rub(Math.max(0,TP.price-TP.sav))+' — это стоимость '+rub(TP.price)+' минус взнос '+rub(TP.sav)+
+      '. Цена растянутого срока: чем длиннее кредит, тем больше остаётся банку.'
+  },
+  afford:{
+    name:'Какая квартира по карману: ставка × срок',
+    title:'Доступная стоимость квартиры',
+    uses:['sav','income','share','@rate','@year'],
+    rowsF:()=>seq(TP.rateFrom,TP.rateTo,TP.rateStep,40),
+    colsF:()=>seq(TP.yearFrom,TP.yearTo,TP.yearStep,24),
+    rowH:'Ставка',colH:'Срок кредита',
+    rowL:v=>(+v).toFixed(v%1?1:0).replace('.',',')+'%',colL:v=>v+' л',
+    cell:(rate,years)=>TP.sav+loanFromPay(limitPay(),rate,years),
+    color:'good',
+    note:()=>'Обратный расчёт: при доходе '+rub(TP.income)+' и готовности отдавать на платёж '+TP.share+'% ('+rub(limitPay())+
+      ') плюс накопленные '+rub(TP.sav)+'. Зелёное — больше метров за те же деньги.'
+  }
+};
+let mtxKey='pay_pr';
+
+/* ---- заливка ---- */
+function heatColor(v,mode,lo,hi){
+  let t;                                   // −1 хорошо … +1 плохо
+  if(mode==='load'){
+    const lim=limitPay();
+    t=lim>0?(v-lim)/lim:0;
+  }else{
+    const span=hi-lo;
+    t=span>0?((v-lo)/span)*2-1:0;
+    if(mode==='good')t=-t;
+  }
+  t=Math.max(-1,Math.min(1,t));
+  const a=(Math.abs(t)*0.5).toFixed(3);
+  return t<0?'rgba(38,150,105,'+a+')':'rgba(205,55,60,'+a+')';
+}
+function renderPicker(){
+  const box=document.getElementById('tpicker');box.innerHTML='';
+  Object.keys(MTX).forEach(k=>{
+    const b=el('button','tpick'+(k===mtxKey?' on':''),MTX[k].name);
+    b.onclick=()=>{mtxKey=k;renderPicker();renderParams();drawMatrix()};
+    box.appendChild(b);
+  });
+}
+function renderParams(){
+  const M=MTX[mtxKey],box=document.getElementById('tparams');box.innerHTML='';
+  const single=M.uses.filter(u=>!GROUPS[u]);
+  const ranges=M.uses.filter(u=>GROUPS[u]);
+  const add=k=>{
+    const f=TPF[k],w=el('div','fld');
+    w.appendChild(el('label',null,f.l));
+    const inp=document.createElement('input');
+    inp.type='number';inp.step=f.step;inp.min=0;inp.value=TP[k];
+    inp.oninput=()=>{TP[k]=parseFloat(inp.value)||0;
+      if(f.t==='money')w.querySelector('.hint').textContent=prettyMoney(TP[k]);
+      clearTimeout(mtxT);mtxT=setTimeout(drawMatrix,260)};
+    w.appendChild(inp);
+    if(f.t==='money')w.appendChild(el('div','hint',prettyMoney(TP[k])));
+    box.appendChild(w);
+  };
+  if(single.length){box.appendChild(el('div','sub2','Условия'));single.forEach(add)}
+  ranges.forEach(g=>{
+    box.appendChild(el('div','sub2',GROUPS[g].title));
+    GROUPS[g].keys.forEach(add);
+  });
+}
+let mtxT;
+function drawMatrix(){
+  const M=MTX[mtxKey];
+  const rows=M.rowsF(),cols=M.colsF();
+  const vals=rows.map(r=>cols.map(c=>M.cell(r,c)));
+  const flat=vals.flat().filter(v=>isFinite(v));
+  const lo=Math.min.apply(null,flat),hi=Math.max.apply(null,flat);
+  let html='<table class="heat"><thead><tr><th class="corner">'+esc(M.rowH)+'</th>'+
+    '<th colspan="'+cols.length+'" style="text-align:center">'+esc(M.colH)+'</th></tr><tr><th class="corner"></th>'+
+    cols.map(c=>'<th>'+M.colL(c)+'</th>').join('')+'</tr></thead><tbody>';
+  rows.forEach((r,i)=>{
+    html+='<tr><th>'+M.rowL(r)+'</th>'+
+      vals[i].map(v=>'<td style="background:'+heatColor(v,M.color,lo,hi)+'">'+f0(v)+'</td>').join('')+'</tr>';
+  });
+  html+='</tbody></table>';
+  document.getElementById('mtxWrap').innerHTML=html;
+  document.getElementById('mtxTitle').textContent=M.title+', \u20BD';
+  document.getElementById('mtxNote').textContent=M.note();
+  const lg=M.color==='load'?['укладывается в лимит','выходит за лимит']
+        :M.color==='good'?['меньше','больше']:['меньше','больше'];
+  document.getElementById('mtxLegend').innerHTML=
+    '<span>'+lg[0]+'</span><span class="bar" style="background:linear-gradient(90deg,rgba(38,150,105,.5),rgba(205,55,60,.5))"></span><span>'+lg[1]+'</span>';
+  mtxLast={M,rows,cols,vals};
+}
+let mtxLast=null;
+document.getElementById('mtxCsv').onclick=()=>{
+  if(!mtxLast){toast('Таблица пуста');return}
+  const{M,rows,cols,vals}=mtxLast;
+  const q=s=>'"'+String(s).replace(/"/g,'""')+'"';
+  const lines=[[q(M.rowH+' \\ '+M.colH)].concat(cols.map(c=>q(M.colL(c)))).join(';')];
+  rows.forEach((r,i)=>lines.push([q(M.rowL(r))].concat(vals[i].map(v=>Math.round(v))).join(';')));
+  lines.push('');lines.push(q(M.note()));
+  const blob=new Blob(['\ufeff'+lines.join('\r\n')],{type:'text/csv;charset=utf-8'});
+  const a=document.createElement('a');
+  a.href=URL.createObjectURL(blob);a.download='tablica-'+mtxKey+'.csv';
+  document.body.appendChild(a);a.click();
+  setTimeout(()=>{URL.revokeObjectURL(a.href);a.remove()},0);
+  toast('CSV скачан');
+};
+/* ---- переключение вкладок ---- */
+let mtxReady=false;
+function showTab(which){
+  const scen=which==='scen';
+  document.getElementById('tab-scen').hidden=!scen;
+  document.getElementById('tab-mtx').hidden=scen;
+  document.getElementById('tab-scen-btn').classList.toggle('on',scen);
+  document.getElementById('tab-mtx-btn').classList.toggle('on',!scen);
+  document.getElementById('tab-scen-btn').setAttribute('aria-selected',scen);
+  document.getElementById('tab-mtx-btn').setAttribute('aria-selected',!scen);
+  if(scen){if(isOn())drawChart()}
+  else if(!mtxReady){mtxReady=true;renderPicker();renderParams();drawMatrix()}
+}
+document.getElementById('tab-scen-btn').onclick=()=>showTab('scen');
+document.getElementById('tab-mtx-btn').onclick=()=>showTab('mtx');
+
 renderChips();layoutHint();renderSide('A');renderSide('B');
 /* ================= оформление ================= */
 const ICON={
